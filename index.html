@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yearly Budget Planner</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7fc;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            height: 100vh;
+            min-height: 100vh;
+            overflow-y: auto;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h2 {
+            font-size: 1.25rem;
+            font-weight: normal;
+            color: #555;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            min-height: 300px;
+            margin-top: 20px;
+        }
+
+        label {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input {
+            padding: 10px;
+            font-size: 1rem;
+            width: 100%;
+            max-width: 300px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            margin-top: 5px;
+        }
+
+        button[type="button"] {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        button[type="button"]:hover {
+            background-color: #45a049;
+        }
+
+        .goal-box {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            background-color: #f9f9f9;
+            padding: 12px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .goal-box .row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+
+        .goal-box input {
+            font-size: 1rem;
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            width: 30%; /* Adjust the width of the input fields */
+        }
+
+        .goal-box .monthly-calculated-value {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #4CAF50;
+            text-align: right;
+        }
+
+        .goal-box button {
+            align-self: flex-start;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+
+        .goal-box .remove-goal {
+            background-color: #ff5757;
+            color: white;
+        }
+
+        .goal-box .remove-goal:hover {
+            background-color: #ff3333;
+        }
+
+        .goal-box .add-money-button {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .goal-box .add-money-button:hover {
+            background-color: #45a049;
+        }
+
+        .allocated-monthly {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-top: 20px;
+            color: #4CAF50;
+        }
+
+        .contribution-addition {
+            font-size: 1rem;
+            padding: 5px;
+            margin-top: 5px;
+            width: 100%;
+            max-width: 130px;
+        }
+
+        button[type="submit"] {
+            background-color: #008CBA;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 1rem;
+            border-radius: 5px;
+            align-self: center;
+            margin-top: 15px;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #007b8c;
+        }
+
+        .input-group {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #total-allocated {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4CAF50;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        #remaining-balance {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #ff9900;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <div class="header">
+            <h1>Yearly Budget Planner</h1>
+            <h2>Track your savings by monthly allocation and update your savings goals!</h2>
+            <h5>Set savings goals, record funds, and stay on track to achieve them—all in one place.</h5>
+            <h5>Plan, save, and stay on track—one step at a time.</h5>
+        </div>
+
+        <form id="goal-form">
+            <div class="input-group">
+                <label for="total-budget">Enter Your Total Yearly Budget ($):</label>
+                <input type="number" id="total-budget" required>
+            </div>
+            <p id="monthly-budget" class="allocated-monthly">Monthly Budget: $0</p>
+            <button type="button" id="add-goal">Add New Goal</button>
+            <div id="goals-container"></div>
+            <button type="button" id="calculate-remaining">Calculate Remaining Balance</button>
+        </form>
+
+        <div id="total-allocated">Total Allocated: $0</div>
+        <div id="remaining-balance">Remaining Balance: $0</div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const goalForm = document.getElementById("goal-form");
+            const totalBudgetInput = document.getElementById("total-budget");
+            const monthlyBudgetDisplay = document.getElementById("monthly-budget");
+            const goalsContainer = document.getElementById("goals-container");
+            const totalAllocatedDisplay = document.getElementById("total-allocated");
+            const remainingBalanceDisplay = document.getElementById("remaining-balance");
+            const addGoalButton = document.getElementById("add-goal");
+            const calculateRemainingButton = document.getElementById("calculate-remaining");
+
+            let totalBudget = 0;
+            let totalAllocated = 0;
+
+            const updateMonthlyBudget = () => {
+                totalBudget = parseFloat(totalBudgetInput.value) || 0;
+                const monthlyBudget = totalBudget / 12;
+                monthlyBudgetDisplay.textContent = `Monthly Budget: $${monthlyBudget.toFixed(2)}`;
+            };
+
+            totalBudgetInput.addEventListener("input", updateMonthlyBudget);
+
+            addGoalButton.addEventListener("click", () => {
+                const goalBox = document.createElement("div");
+                goalBox.className = "goal-box";
+
+                goalBox.innerHTML = `
+                    <div class="row">
+                        <label for="goal-name">Goal:</label>
+                        <input type="text" id="goal-name" placeholder="e.g., Japan Trip, Car" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="total-savings-goal">Total Savings Goal ($):</label>
+                        <input type="number" id="total-savings-goal" placeholder="Total Savings Goal" required>
+                    </div>
+                    <div class="row">
+                        <span class="monthly-calculated-value">Monthly Savings Amount: $0</span>
+                    </div>
+                    <div class="input-group">
+                        <label for="contribution-addition">Money to Set Aside ($):</label>
+                        <input type="number" id="contribution-addition" class="contribution-addition" placeholder="Amount">
+                        <button type="button" class="add-money-button">Add Amount</button>
+                    </div>
+                    <div class="row">
+                        <span class="allocated-monthly">Total Money Added This Month: $0.00</span>
+                        <button type="button" class="remove-goal">Remove Goal</button>
+                    </div>
+                `;
+
+                const savingsGoalInput = goalBox.querySelector("#total-savings-goal");
+                const monthlyAmountDisplay = goalBox.querySelector(".monthly-calculated-value");
+
+                savingsGoalInput.addEventListener("input", () => {
+                    const totalGoal = parseFloat(savingsGoalInput.value) || 0;
+                    const monthlyAmount = totalGoal / 12;
+                    monthlyAmountDisplay.textContent = `Monthly Savings Amount: $${monthlyAmount.toFixed(2)}`;
+                });
+
+                const addMoneyButton = goalBox.querySelector(".add-money-button");
+                const contributionInput = goalBox.querySelector("#contribution-addition");
+                const totalAddedDisplay = goalBox.querySelector(".allocated-monthly");
+
+                addMoneyButton.addEventListener("click", () => {
+                    const contribution = parseFloat(contributionInput.value) || 0;
+                    totalAllocated += contribution;
+                    totalAddedDisplay.textContent = `Total Money Added This Month: $${contribution.toFixed(2)}`;
+                    totalAllocatedDisplay.textContent = `Total Allocated: $${totalAllocated.toFixed(2)}`;
+                });
+
+                const removeGoalButton = goalBox.querySelector(".remove-goal");
+                removeGoalButton.addEventListener("click", () => {
+                    const contribution = parseFloat(totalAddedDisplay.textContent.split("$")[1]) || 0;
+                    totalAllocated -= contribution;
+                    totalAllocatedDisplay.textContent = `Total Allocated: $${totalAllocated.toFixed(2)}`;
+                    goalsContainer.removeChild(goalBox);
+                });
+
+                goalsContainer.appendChild(goalBox);
+            });
+
+            calculateRemainingButton.addEventListener("click", () => {
+                const remainingBalance = totalBudget - totalAllocated;
+                remainingBalanceDisplay.textContent = `Remaining Balance: $${remainingBalance.toFixed(2)}`;
+            });
+        });
+    </script>
+</body>
+</html>
