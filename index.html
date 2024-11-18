@@ -146,6 +146,19 @@
             font-weight: bold;
             margin-top: 20px;
             color: #4CAF50;
+            flex-grow: 1;
+        }
+
+        .allocated-monthly-container {
+            display: flex;
+            justify-content: space-between; 
+            align-items: center;
+            width: 100%;
+        }
+
+        #message {
+            margin-left: auto;
+            text-align: right;
         }
 
         .contribution-addition {
@@ -242,6 +255,16 @@
 
             totalBudgetInput.addEventListener("input", updateMonthlyBudget);
 
+            const updateTotalAllocated = () => {
+                totalAllocated = Array.from(document.querySelectorAll('.allocated-monthly'))
+                    .reduce((sum, element) => {
+                        const value = parseFloat(element.textContent.replace('Total Money Added This Month: $', '').trim());
+                        return sum + (isNaN(value) ? 0 : value);
+                    }, 0);
+
+                totalAllocatedDisplay.textContent = `Total Allocated: $${totalAllocated.toFixed(2)}`;
+            };
+
             addGoalButton.addEventListener("click", () => {
                 const goalBox = document.createElement("div");
                 goalBox.className = "goal-box";
@@ -256,45 +279,58 @@
                         <input type="number" id="total-savings-goal" placeholder="Total Savings Goal" required>
                     </div>
                     <div class="row">
-                        <span class="monthly-calculated-value">Monthly Savings Amount: $0</span>
+                        <span class="monthly-calculated-value">Monthly Savings Amount: $0.00</span>
                     </div>
                     <div class="input-group">
-                        <label for="contribution-addition">Money to Set Aside ($):</label>
-                        <input type="number" id="contribution-addition" class="contribution-addition" placeholder="Amount">
+                        <label for="contribution-addition">Add Amount:</label>
+                        <input type="number" id="contribution-addition" placeholder="Amount to Add" class="contribution-addition">
                         <button type="button" class="add-money-button">Add Amount</button>
                     </div>
-                    <div class="row">
-                        <span class="allocated-monthly">Total Money Added This Month: $0.00</span>
-                        <button type="button" class="remove-goal">Remove Goal</button>
+                    <button type="button" class="remove-goal">Remove Goal</button>
+                    <div class="allocated-monthly-container">
+                        <div class="allocated-monthly">Total Money Added This Month: $0</div>
+                        <span id="message" style="font-size: 0.9rem; color: #555; margin-left: auto;"></span>
                     </div>
                 `;
 
-                const savingsGoalInput = goalBox.querySelector("#total-savings-goal");
-                const monthlyAmountDisplay = goalBox.querySelector(".monthly-calculated-value");
 
-                savingsGoalInput.addEventListener("input", () => {
-                    const totalGoal = parseFloat(savingsGoalInput.value) || 0;
-                    const monthlyAmount = totalGoal / 12;
-                    monthlyAmountDisplay.textContent = `Monthly Savings Amount: $${monthlyAmount.toFixed(2)}`;
-                });
 
+                const goalNameInput = goalBox.querySelector("#goal-name");
+                const totalSavingsGoalInput = goalBox.querySelector("#total-savings-goal");
+                const contributionAdditionInput = goalBox.querySelector("#contribution-addition");
                 const addMoneyButton = goalBox.querySelector(".add-money-button");
-                const contributionInput = goalBox.querySelector("#contribution-addition");
-                const totalAddedDisplay = goalBox.querySelector(".allocated-monthly");
+                const removeGoalButton = goalBox.querySelector(".remove-goal");
+                const allocatedMonthlyDisplay = goalBox.querySelector(".allocated-monthly");
+                const monthlyCalculatedValueDisplay = goalBox.querySelector(".monthly-calculated-value");
+
+                let totalMoneyAddedThisMonth = 0;
 
                 addMoneyButton.addEventListener("click", () => {
-                    const contribution = parseFloat(contributionInput.value) || 0;
-                    totalAllocated += contribution;
-                    totalAddedDisplay.textContent = `Total Money Added This Month: $${contribution.toFixed(2)}`;
-                    totalAllocatedDisplay.textContent = `Total Allocated: $${totalAllocated.toFixed(2)}`;
-                });
+                    const moneyToAdd = parseFloat(contributionAdditionInput.value) || 0;
+                    totalMoneyAddedThisMonth += moneyToAdd;
 
-                const removeGoalButton = goalBox.querySelector(".remove-goal");
+                    allocatedMonthlyDisplay.textContent = `Total Money Added This Month: $${totalMoneyAddedThisMonth.toFixed(2)}`;
+                    
+                    
+                    const totalSavingsGoal = parseFloat(totalSavingsGoalInput.value) || 0;
+                    const monthlySavingsAmount = totalSavingsGoal / 12;
+                    monthlyCalculatedValueDisplay.textContent = `Monthly Savings Amount: $${monthlySavingsAmount.toFixed(2)}`;
+                    
+                    const messageDisplay = goalBox.querySelector("#message");
+                    if (totalMoneyAddedThisMonth >= monthlySavingsAmount) {
+                        messageDisplay.textContent = "Congrats! Goal achieved!";
+                    } else {
+                        messageDisplay.textContent = "Good start! Keep going!";
+                    }
+
+                    contributionAdditionInput.value = "";
+                    updateTotalAllocated();
+                });
+                
+
                 removeGoalButton.addEventListener("click", () => {
-                    const contribution = parseFloat(totalAddedDisplay.textContent.split("$")[1]) || 0;
-                    totalAllocated -= contribution;
-                    totalAllocatedDisplay.textContent = `Total Allocated: $${totalAllocated.toFixed(2)}`;
-                    goalsContainer.removeChild(goalBox);
+                    goalBox.remove();
+                    updateTotalAllocated();
                 });
 
                 goalsContainer.appendChild(goalBox);
